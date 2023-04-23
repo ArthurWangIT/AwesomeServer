@@ -8,8 +8,9 @@
 #include <stdint.h>
 #include <string>
 #include <memory>
+#include <list>
 
-namespace {
+namespace AwesomeServer {
     class LogLevel {
     public:
         enum Level {
@@ -64,9 +65,28 @@ namespace {
 
         void log(LogLevel::Level level, LogEvent::ptr event);
 
+        void debug(LogEvent::ptr event);
+
+        void info(LogEvent::ptr event);
+
+        void warn(LogEvent::ptr event);
+
+        void error(LogEvent::ptr event);
+
+        void fatal(LogEvent::ptr event);
+
+        void addAppender(LogAppender::ptr appender);
+
+        void delAppender(LogAppender::ptr appender);
+
+        LogLevel::Level getLevel() const { return m_level; };
+
+        void setLevel(LogLevel::Level level) { m_level = level; };
+
     private:
         std::string m_name;
         LogLevel::Level m_level;
+        std::list <LogAppender::ptr> m_appenders;
     };
 
     class StdoutLogAppender : public LogAppender {
