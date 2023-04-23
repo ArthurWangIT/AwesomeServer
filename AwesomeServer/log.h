@@ -9,6 +9,8 @@
 #include <string>
 #include <memory>
 #include <list>
+#include <sstream>
+#include <fstream>
 
 namespace AwesomeServer {
     class LogLevel {
@@ -40,6 +42,8 @@ namespace AwesomeServer {
 
     class LogFormatter {
     public:
+        typedef std::shared_ptr <LogFormatter> ptr;
+
         std::string format(LogEvent::ptr event);
 
     private:
@@ -51,10 +55,15 @@ namespace AwesomeServer {
 
         virtual ~LogAppender() {}
 
-        void log(LogLevel::Level level, LogEvent::ptr);
+        virtual void log(LogLevel::Level level, LogEvent::ptr) = 0;
 
-    private:
-        LogLevel m_level;
+        void setFormatter(LogFormatter::ptr formatter) { m_formatter = formatter; }
+
+        LogFormatter::ptr getFormatter() { return m_formatter; }
+
+    protected:
+        LogLevel::Level m_level;
+        LogFormatter::ptr m_formatter;
     };
 
     class Logger {
@@ -90,11 +99,25 @@ namespace AwesomeServer {
     };
 
     class StdoutLogAppender : public LogAppender {
+    public:
+        typedef std::shared_ptr <StdoutLogAppender> ptr;
 
+        void log(LogLevel::Level level, LogEvent::ptr event) override;
     };
 
     class FileLogAppender : public LogAppender {
+    public:
+        typedef std::shared_ptr <FileLogAppender> ptr;
 
+        FileLogAppender(const std::string &filename);
+
+        void log(LogLevel::Level level, LogEvent::ptr event) override;
+
+        bool reopen();
+
+    private:
+        std::string m_filename;
+        std::ofstream m_filestream;
     };
 }
 
